@@ -14,6 +14,7 @@ class _HomePageState extends State<HomePage>{
 
   // TODO: Replace this with dynamic city selection using a separate page/dropdown
   final String _cityName = "Philadelphia";
+  final String _iconSize = "4x";
 
   // Access weather for a specific location from OpenWeatherMap
   final WeatherFactory _weatherFactory = WeatherFactory(OPEN_WEATHER_MAP_KEY);
@@ -60,10 +61,16 @@ class _HomePageState extends State<HomePage>{
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _displayLocation(),
+            // Padding
             SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.05,
+              height: MediaQuery.sizeOf(context).height * 0.1,
             ),
             _displayDateTime(),
+            // Padding
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.1
+            ),
+            _displayWeather(),
           ],
         )
     );
@@ -78,7 +85,9 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
+  // TODO: Need to update this information in real time
   Widget _displayDateTime(){
+    // TODO: Make this a _weather? call and add a null case for the datetime
     DateTime currentDateTime = _weather!.date!;
     return Column(
       children: [
@@ -113,6 +122,31 @@ class _HomePageState extends State<HomePage>{
               )
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _displayWeather(){
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Weather icon
+        Container(
+          height: MediaQuery.sizeOf(context).height * 0.3,
+          decoration: BoxDecoration(
+            image: DecorationImage(image: NetworkImage(
+                "https://openweathermap.org/img/wn/${_weather?.weatherIcon}@${_iconSize}.png"))
+          ),
+        ),
+        // Weather description
+        Text(
+          _weather?.weatherDescription ?? "",
+          style: const TextStyle(
+            // TODO: Set custom style later
+          )
         ),
       ],
     );
