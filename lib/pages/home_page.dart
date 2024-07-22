@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/weather.dart';
 import 'package:wethr_app/api_keys.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -24,7 +25,6 @@ class _HomePageState extends State<HomePage>{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _weatherFactory.currentWeatherByCityName(_cityName).then((fweather){
       // Ensure UI updates on retrieval
@@ -60,6 +60,7 @@ class _HomePageState extends State<HomePage>{
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // _displayLocationSearch(),
             _displayLocation(),
             // Padding
             SizedBox(
@@ -71,11 +72,18 @@ class _HomePageState extends State<HomePage>{
               height: MediaQuery.sizeOf(context).height * 0.1
             ),
             _displayWeather(),
+            // Padding
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.1
+            ),
+            _displayTemp(),
           ],
         )
     );
   }
 
+
+  // Returns currently selected location that weather data is being retrieved for
   Widget _displayLocation(){
     return Text(
       _weather?.areaName ?? "",
@@ -85,7 +93,28 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
+  // Starting work
+  // Widget _displayLocationSearch(){
+  //   return DropdownSearch<String>(
+  //     popupProps: PopupProps.menu(
+  //       // showSelectedItems: true,
+  //       showSearchBox: true,
+  //       disabledItemFn: (String s) => s.startsWith('I'),
+  //     ),
+  //     items: ["Brazil", "Italia (Disabled)", "Tunisia", 'Canada'],
+  //     dropdownDecoratorProps: DropDownDecoratorProps(
+  //       dropdownSearchDecoration: InputDecoration(
+  //         labelText: "Select a city",
+  //         hintText: "Filter results using the search bar",
+  //       ),
+  //     ),
+  //     onChanged: print,
+  //     // selectedItem: "Brazil",
+  //   );
+  // }
+
   // TODO: Need to update this information in real time
+  // Returns current time, date, and day of the week
   Widget _displayDateTime(){
     // TODO: Make this a _weather? call and add a null case for the datetime
     DateTime currentDateTime = _weather!.date!;
@@ -116,7 +145,8 @@ class _HomePageState extends State<HomePage>{
             ),
             Text(
               // day, month, year
-              "  ${DateFormat("d.m.y").format(currentDateTime)}",
+              // do NOT use "m" - minutes not month
+              "  ${DateFormat("d.M.y").format(currentDateTime)}",
               style: const TextStyle(
                 //TODO: Set text style later
               )
@@ -127,6 +157,7 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
+  // Returns icon indicating current weather condition along with text label
   Widget _displayWeather(){
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -149,6 +180,17 @@ class _HomePageState extends State<HomePage>{
           )
         ),
       ],
+    );
+  }
+
+  // Returns current temp
+  // TODO: Let user select farenheight vs celsius
+  Widget _displayTemp(){
+    return Text(
+      "${_weather?.temperature?.fahrenheit?.toStringAsFixed(0)}° F",
+      style: const TextStyle(
+        //TODO: Set custom text style
+      )
     );
   }
 

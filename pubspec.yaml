@@ -14,6 +14,7 @@ dependencies:
   weather: ^3.1.1
   # Formatting date-time objects into strings
   intl: ^0.18.1
+  dropdown_search: ^5.0.6
 
 dev_dependencies:
   flutter_test:
