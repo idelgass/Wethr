@@ -14,7 +14,7 @@ class HomePage extends StatefulWidget{
 class _HomePageState extends State<HomePage>{
 
   // TODO: Replace this with dynamic city selection using a separate page/dropdown
-  final String _cityName = "Philadelphia";
+  final String _cityName = "Los Angeles";
   final String _iconSize = "4x";
 
   // Access weather for a specific location from OpenWeatherMap
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage>{
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // _displayLocationSearch(),
+            _displayLocationSearch(),
             _displayLocation(),
             // Padding
             SizedBox(
@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
-
   // Returns currently selected location that weather data is being retrieved for
   Widget _displayLocation(){
     return Text(
@@ -93,25 +92,38 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
-  // Starting work
-  // Widget _displayLocationSearch(){
-  //   return DropdownSearch<String>(
-  //     popupProps: PopupProps.menu(
-  //       // showSelectedItems: true,
-  //       showSearchBox: true,
-  //       disabledItemFn: (String s) => s.startsWith('I'),
-  //     ),
-  //     items: ["Brazil", "Italia (Disabled)", "Tunisia", 'Canada'],
-  //     dropdownDecoratorProps: DropDownDecoratorProps(
-  //       dropdownSearchDecoration: InputDecoration(
-  //         labelText: "Select a city",
-  //         hintText: "Filter results using the search bar",
-  //       ),
-  //     ),
-  //     onChanged: print,
-  //     // selectedItem: "Brazil",
-  //   );
-  // }
+  // TODO: Need to read in city names from JSON, would be good to include country codes
+  Widget _displayLocationSearch(){
+    return DropdownSearch<String>(
+      popupProps: PopupProps.menu(
+        // showSelectedItems: true,
+        showSearchBox: true,
+      ),
+      items: ["London", "New York", "Albany", 'Sao Paolo'],
+      dropdownDecoratorProps: DropDownDecoratorProps(
+        dropdownSearchDecoration: InputDecoration(
+          labelText: "Select a city",
+          hintText: "Filter results using the search bar",
+        ),
+      ),
+      onChanged: (String? newCity){
+        if(newCity != null) _changeCity(newCity);
+      },
+      // selectedItem: "Brazil",
+    );
+  }
+
+  // Handles logic for changing selected city
+  void _changeCity(String cityName){
+    _weatherFactory.currentWeatherByCityName(cityName).then((fweather){
+      // Ensure UI updates on retrieval
+      setState(() {
+        _weather = fweather;
+      });
+    }).catchError((e){
+      print('Error retrieving weather data: $e');
+    });
+  }
 
   // TODO: Need to update this information in real time
   // Returns current time, date, and day of the week
