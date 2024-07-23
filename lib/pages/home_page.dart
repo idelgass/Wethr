@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:weather/weather.dart';
 import 'package:wethr_app/api_keys.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:wethr_app/cities.dart';
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -13,20 +14,21 @@ class HomePage extends StatefulWidget{
 
 class _HomePageState extends State<HomePage>{
 
-  // TODO: Replace this with dynamic city selection using a separate page/dropdown
-  final String _cityName = "Los Angeles";
   final String _iconSize = "4x";
-
   // Access weather for a specific location from OpenWeatherMap
   final WeatherFactory _weatherFactory = WeatherFactory(OPEN_WEATHER_MAP_KEY);
+  final CityProvider _cityProvider = CityProvider();
 
   // Stores weather-query response from OpenWeatherMap
   Weather? _weather;
+  String _selectedCity = "Los Angeles";
+
 
   @override
   void initState() {
     super.initState();
-    _weatherFactory.currentWeatherByCityName(_cityName).then((fweather){
+    _loadCities();
+    _weatherFactory.currentWeatherByCityName(_selectedCity).then((fweather){
       // Ensure UI updates on retrieval
       setState(() {
         _weather = fweather;
@@ -82,6 +84,15 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
+  Future<void> _loadCities() async{
+    await _cityProvider.loadCities();
+    setState(() {
+      // Set a default city if none is selected yet
+      _selectedCity = "New York";
+      _changeCity(_selectedCity);
+    });
+  }
+
   // Returns currently selected location that weather data is being retrieved for
   Widget _displayLocation(){
     return Text(
@@ -99,7 +110,7 @@ class _HomePageState extends State<HomePage>{
         // showSelectedItems: true,
         showSearchBox: true,
       ),
-      items: ["London", "New York", "Albany", 'Sao Paolo'],
+      items: _cityProvider.getCityNames(),
       dropdownDecoratorProps: DropDownDecoratorProps(
         dropdownSearchDecoration: InputDecoration(
           labelText: "Select a city",
