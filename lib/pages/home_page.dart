@@ -4,6 +4,7 @@ import 'package:weather/weather.dart';
 import 'package:wethr_app/api_keys.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:wethr_app/cities.dart';
+import 'dart:async';
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -21,6 +22,7 @@ class _HomePageState extends State<HomePage>{
 
   // Stores weather-query response from OpenWeatherMap
   Weather? _weather;
+  Timer? _updateTimer;
   String _selectedCity = "Los Angeles";
 
 
@@ -28,12 +30,20 @@ class _HomePageState extends State<HomePage>{
   void initState() {
     super.initState();
     _loadCities();
-    _weatherFactory.currentWeatherByCityName(_selectedCity).then((fweather){
-      // Ensure UI updates on retrieval
-      setState(() {
-        _weather = fweather;
-      });
-    });
+    // _weatherFactory.currentWeatherByCityName(_selectedCity).then((fweather){
+    //   // Ensure UI updates on retrieval
+    //   setState(() {
+    //     _weather = fweather;
+    //   });
+    // });
+    _updateWeather(_selectedCity);
+    _initPeriodicRefresh();
+  }
+
+  @override
+  void dispose(){
+    _updateTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -84,12 +94,25 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
+  void _initPeriodicRefresh(){
+    _updateTimer = Timer.periodic(
+      const Duration(minutes: 10),
+      (timer){
+        _updateWeather(_selectedCity);
+        print("Refreshing...");
+      }
+    );
+  }
+
+  // TODO : Include state along with country code for duplicates
+  // Populates dropdown_search with list of cities from OpenWeatherMap
   Future<void> _loadCities() async{
     await _cityProvider.loadCities();
+    // TODO: Do I need this call here if there is already one in updateWeather?
     setState(() {
       // Set a default city if none is selected yet
       _selectedCity = "New York";
-      _changeCity(_selectedCity);
+      _updateWeather(_selectedCity);
     });
   }
 
@@ -103,7 +126,6 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
-  // TODO: Need to read in city names from JSON, would be good to include country codes
   Widget _displayLocationSearch(){
     return DropdownSearch<String>(
       popupProps: PopupProps.menu(
@@ -118,14 +140,14 @@ class _HomePageState extends State<HomePage>{
         ),
       ),
       onChanged: (String? newCity){
-        if(newCity != null) _changeCity(newCity);
+        if(newCity != null) _updateWeather(newCity);
       },
       // selectedItem: "Brazil",
     );
   }
 
   // Handles logic for changing selected city
-  void _changeCity(String cityName){
+  void _updateWeather(String cityName){
     _weatherFactory.currentWeatherByCityName(cityName).then((fweather){
       // Ensure UI updates on retrieval
       setState(() {
@@ -137,6 +159,7 @@ class _HomePageState extends State<HomePage>{
   }
 
   // TODO: Need to update this information in real time
+  // TODO: Localize times to selected city
   // Returns current time, date, and day of the week
   Widget _displayDateTime(){
     // TODO: Make this a _weather? call and add a null case for the datetime
@@ -215,6 +238,10 @@ class _HomePageState extends State<HomePage>{
         //TODO: Set custom text style
       )
     );
+  }
+
+  Widget _displayForecast(){
+    return SizedBox();
   }
 
 }

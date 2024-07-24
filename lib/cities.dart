@@ -12,6 +12,7 @@ class City {
     required this.country
   });
 
+  // TODO : Need to have an optional state param to include along with the country code
   factory City.fromJson(Map<String, dynamic> json) {
     return City(
       // Without this dart parses the id using the num type, super of both int and double
