@@ -23,20 +23,13 @@ class _HomePageState extends State<HomePage>{
   // Stores weather-query response from OpenWeatherMap
   Weather? _weather;
   Timer? _updateTimer;
-  String _selectedCity = "Los Angeles";
+  City? _selectedCity;
 
 
   @override
   void initState() {
     super.initState();
     _loadCities();
-    // _weatherFactory.currentWeatherByCityName(_selectedCity).then((fweather){
-    //   // Ensure UI updates on retrieval
-    //   setState(() {
-    //     _weather = fweather;
-    //   });
-    // });
-    _updateWeather(_selectedCity);
     _initPeriodicRefresh();
   }
 
@@ -111,7 +104,8 @@ class _HomePageState extends State<HomePage>{
     // TODO: Do I need this call here if there is already one in updateWeather?
     setState(() {
       // Set a default city if none is selected yet
-      _selectedCity = "New York";
+      _selectedCity = _cityProvider.getCities().first;
+      // TODO: Make sure this bang is kosher
       _updateWeather(_selectedCity);
     });
   }
@@ -127,28 +121,36 @@ class _HomePageState extends State<HomePage>{
   }
 
   Widget _displayLocationSearch(){
-    return DropdownSearch<String>(
+    return DropdownSearch<City>(
       popupProps: PopupProps.menu(
         // showSelectedItems: true,
         showSearchBox: true,
       ),
-      items: _cityProvider.getCityNames(),
+      items: _cityProvider.getCities(),
       dropdownDecoratorProps: DropDownDecoratorProps(
         dropdownSearchDecoration: InputDecoration(
           labelText: "Select a city",
           hintText: "Filter results using the search bar",
         ),
       ),
-      onChanged: (String? newCity){
-        if(newCity != null) _updateWeather(newCity);
+      itemAsString: (City? city) => city?.toString() ?? 'Error: City could not be loaded',
+      onChanged: (City? newCity){
+        _selectedCity = newCity;
+        _updateWeather(newCity);
       },
-      // selectedItem: "Brazil",
+      // selectedItem: _selectedCity,
     );
   }
 
-  // Handles logic for changing selected city
-  void _updateWeather(String cityName){
-    _weatherFactory.currentWeatherByCityName(cityName).then((fweather){
+  // Handles logic for updating weather info and changing cities
+  void _updateWeather(City? city){
+    // Guard condition for nullable type city
+    if(city == null){
+      print("Error: Attempted to update whether while selected city is null");
+      return;
+    }
+
+    _weatherFactory.currentWeatherByLocation(city.lat, city.lon).then((fweather){
       // Ensure UI updates on retrieval
       setState(() {
         _weather = fweather;
