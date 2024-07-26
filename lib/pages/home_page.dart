@@ -98,7 +98,10 @@ class _HomePageState extends State<HomePage>{
             _displayTemp(),
             // Padding
             SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.15,
+              height: MediaQuery.sizeOf(context).height * 0.12,
+            ),
+            Text(
+              "5-Day Forecast: ",
             ),
             _displayForecast(),
           ],
@@ -286,7 +289,7 @@ class _HomePageState extends State<HomePage>{
           crossAxisCount: length,
           crossAxisSpacing: 2,
           mainAxisSpacing: 8,
-          childAspectRatio: 0.7
+          childAspectRatio: 0.5
         ),
         itemCount: length,
         itemBuilder: (context, index) {
@@ -303,20 +306,30 @@ class _HomePageState extends State<HomePage>{
             child: Card(
               elevation: 4,
               child: Column(
+                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Text(DateFormat("E").format(date)),
                   Text(DateFormat("E").format(forecastWeather.date!)),
+                  // Padding
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.02,
+                  ),
                   Container(
-                    height: 20,
-                    width: 20,
+                    height: 50,
+                    width: 50,
                     decoration: BoxDecoration(
                         image: DecorationImage(image: NetworkImage(
                             "https://openweathermap.org/img/wn/${forecastWeather.weatherIcon}@${_iconSize}.png"))
                     ),
                   ),
+                  // Padding
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.001,
+                  ),
                   Text(
-                      "${forecastWeather.temperature!.celsius!.toStringAsFixed(0)}C"
+                      "${forecastWeather.temperature!.fahrenheit!.toStringAsFixed(0)}C"
                   ),
                   //Text('${forecastDay.temperature!.celsius!.toStringAsFixed(0)}°C'),
                 ],
