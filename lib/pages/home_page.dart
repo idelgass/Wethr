@@ -6,6 +6,8 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:wethr_app/cities.dart';
 import 'dart:async';
 
+import 'package:wethr_app/pages/detailed_forecast.dart';
+
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
 
@@ -95,7 +97,18 @@ class _HomePageState extends State<HomePage>{
             // SizedBox(
             //   height: MediaQuery.sizeOf(context).height * 0.1
             // ),
-            _displayTemp(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _displayTemp(),
+                // Padding
+                SizedBox(
+                  width: MediaQuery.sizeOf(context).width * 0.1,
+                ),
+                _displayHumidity()
+              ],
+            ),
             // Padding
             SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.12,
@@ -252,14 +265,26 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
+  Widget _displayHumidity(){
+    return Text(
+      "Humidity: ${_weather?.humidity?.toStringAsFixed(0)}%",
+      style: const TextStyle(
+        // TODO: Set text style
+    ),
+    );
+  }
+
+
+  // TODO: Check null safety
+  //
   // Currently just adds 24h (-3h on the last day) and gets the weather at that time
   // TODO: Implement some method of getting forecast at set time (like 7-10am or midday) or checking for conditions like rain
   //
   // Last day occasionally displays same day as prev if current time is close enough to 12am
   // TODO: maybe just calculate displayed days instead of retrieving from forecast object
   //
-  // Consider displauing forecast as a single column that users can scroll through
-  // Could retrieve first weather object from each day as the thumbnail or maybe the one between 7-10am
+  // Consider displaying forecast as a single column that users can scroll through
+  // Could retrieve first weather object from each day as the th,umbnail or maybe the one between 7-10am
   // Then retain popup functionality w more detailed display
   Widget _displayForecast(){
     if(_forecast == null || _weather == null){
@@ -302,6 +327,13 @@ class _HomePageState extends State<HomePage>{
           return GestureDetector(
             onTap: () {
               // TODO: Implement detailed view
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        DetailedForecastView(weather: forecastWeather),
+                ),
+              );
             },
             child: Card(
               elevation: 4,
@@ -310,7 +342,6 @@ class _HomePageState extends State<HomePage>{
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Text(DateFormat("E").format(date)),
                   Text(DateFormat("E").format(forecastWeather.date!)),
                   // Padding
                   SizedBox(
@@ -329,9 +360,8 @@ class _HomePageState extends State<HomePage>{
                     height: MediaQuery.sizeOf(context).height * 0.001,
                   ),
                   Text(
-                      "${forecastWeather.temperature!.fahrenheit!.toStringAsFixed(0)}C"
+                      "${forecastWeather.temperature!.fahrenheit!.toStringAsFixed(0)}° F"
                   ),
-                  //Text('${forecastDay.temperature!.celsius!.toStringAsFixed(0)}°C'),
                 ],
               ),
             ),
