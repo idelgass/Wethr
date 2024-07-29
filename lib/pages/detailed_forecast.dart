@@ -62,7 +62,9 @@ class DetailedForecastView extends StatelessWidget{
               SizedBox(height: 8),
               Text(
                 "Wind Speed: ${weather.windSpeed} m/s",
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(
+                    fontSize: 18
+                ),
               ),
             ],
           ),

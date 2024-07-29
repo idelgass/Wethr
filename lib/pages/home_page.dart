@@ -1,3 +1,5 @@
+// TODO: Store a TextStyle object (potentially in another file) to make repeated reference to
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/weather.dart';
