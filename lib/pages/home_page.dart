@@ -51,7 +51,9 @@ class _HomePageState extends State<HomePage>{
         child: Column(
           children: [
             _displayLocationSearch(),
-            Expanded(child: _buildUI(),),
+            Expanded(
+              child: _buildUI(),
+            ),
           ],
         ),
       ),
@@ -257,7 +259,7 @@ class _HomePageState extends State<HomePage>{
   }
 
   // Returns current temp
-  // TODO: Let user select farenheight vs celsius
+  // TODO: Let user select fahrenheit vs celsius
   Widget _displayTemp(){
     return Text(
       "${_weather?.temperature?.fahrenheit?.toStringAsFixed(0)}° F",
@@ -333,7 +335,7 @@ class _HomePageState extends State<HomePage>{
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        DetailedForecastView(weather: forecastWeather),
+                        DetailedForecastView(weather: forecastWeather, forecast: _forecast!),
                 ),
               );
             },
