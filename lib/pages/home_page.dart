@@ -69,60 +69,54 @@ class _HomePageState extends State<HomePage>{
     }
 
     // Load of OpenWeatherMap API successful
-    return SizedBox(
-        width: MediaQuery
-            .sizeOf(context)
-            .width,
-        height: MediaQuery
-            .sizeOf(context)
-            .height,
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // _displayLocationSearch(),
-            // Padding
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.02,
-            ),
-            _displayLocation(),
-            // Padding
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.01,
-            ),
-            _displayDateTime(),
-            // Padding
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.1
-            ),
-            _displayWeather(),
-            // Padding
-            // SizedBox(
-            //   height: MediaQuery.sizeOf(context).height * 0.1
-            // ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _displayTemp(),
-                // Padding
-                SizedBox(
-                  width: MediaQuery.sizeOf(context).width * 0.1,
+    return LayoutBuilder(
+        builder: (context, constraints){
+          return Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Padding
+              SizedBox(
+                height: constraints.maxHeight * 0.02,
+              ),
+              _displayLocation(),
+              // Padding
+              SizedBox(
+                height: constraints.maxHeight * 0.01,
+              ),
+              _displayDateTime(),
+              // Padding
+              SizedBox(
+                  height: constraints.maxHeight * 0.1
+              ),
+              _displayWeather(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _displayTemp(),
+                  // Padding
+                  SizedBox(
+                    width: constraints.maxWidth * 0.1,
+                  ),
+                  _displayHumidity()
+                ],
+              ),
+              // Padding
+              SizedBox(
+                height: constraints.maxHeight * 0.12,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  "5-Day Forecast: ",
                 ),
-                _displayHumidity()
-              ],
-            ),
-            // Padding
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.12,
-            ),
-            Text(
-              "5-Day Forecast: ",
-            ),
-            _displayForecast(),
-          ],
-        )
+              ),
+              _displayForecast(),
+            ],
+          );
+        }
     );
   }
 
@@ -163,12 +157,12 @@ class _HomePageState extends State<HomePage>{
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: DropdownSearch<City>(
-        popupProps: PopupProps.menu(
+        popupProps: const PopupProps.menu(
           // showSelectedItems: true,
           showSearchBox: true,
         ),
         items: _cityProvider.getCities(),
-        dropdownDecoratorProps: DropDownDecoratorProps(
+        dropdownDecoratorProps: const DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
             labelText: "Select a city",
             hintText: "Filter results using the search bar",
@@ -313,64 +307,76 @@ class _HomePageState extends State<HomePage>{
     final DateTime endDate = currentDateTime.add(Duration(days: length));
 
     return Expanded(
-      child: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: length,
-          crossAxisSpacing: 2,
-          mainAxisSpacing: 8,
-          childAspectRatio: 0.5
-        ),
-        itemCount: length,
-        itemBuilder: (context, index) {
-          DateTime date = currentDateTime.add(Duration(days: index));
-          // For SOME REASON the provided 5 day forecast does not include the very last time
-          // So we subtract the stupid bit from the index to not attempt access of element 40 (out of range)
-          int stupidBit = index == 5 ? 1 : 0;
-          Weather forecastWeather = _forecast!.elementAt(index * 8 - stupidBit);
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // May want to adjust number of columns based on screen width, const for now
+          int crossAxisCount = length;
+          double cardHeight = constraints.maxHeight;
 
-          return GestureDetector(
-            onTap: () {
-              // TODO: Implement detailed view
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        DetailedForecastView(weather: forecastWeather, forecast: _forecast!),
+
+          return GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: (constraints.maxWidth / crossAxisCount) / constraints.maxHeight
+            ),
+            itemCount: length,
+            itemBuilder: (context, index) {
+              DateTime date = currentDateTime.add(Duration(days: index));
+              // For SOME REASON the provided 5 day forecast does not include the very last time
+              // So we subtract the stupid bit from the index to not attempt access of element 40 (out of range)
+              int stupidBit = index == 5 ? 1 : 0;
+              Weather forecastWeather = _forecast!.elementAt(index * 8 - stupidBit);
+
+              return GestureDetector(
+                onTap: () {
+                  // TODO: Implement detailed view
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            DetailedForecastView(weather: forecastWeather, forecast: _forecast!),
+                    ),
+                  );
+                },
+                child: Card(
+                  elevation: 4,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(DateFormat("E").format(forecastWeather.date!)),
+                      // Padding
+                      // SizedBox(
+                      //   height: cardHeight * 0.08,
+                      // ),
+                      Visibility(
+                        visible: cardHeight >= 105,
+                        child: Container(
+                          height: cardHeight * 0.5,
+                          width: cardHeight * 0.5,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(image: NetworkImage(
+                                  "https://openweathermap.org/img/wn/${forecastWeather.weatherIcon}@2x.png"))
+                          ),
+                        ),
+                      ),
+                      // Padding
+                      // SizedBox(
+                      //   height: cardHeight * 0.08,
+                      // ),
+                      Text(
+                          "${forecastWeather.temperature!.fahrenheit!.toStringAsFixed(0)}° F"
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
-            child: Card(
-              elevation: 4,
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(DateFormat("E").format(forecastWeather.date!)),
-                  // Padding
-                  SizedBox(
-                    height: MediaQuery.sizeOf(context).height * 0.02,
-                  ),
-                  Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(image: NetworkImage(
-                            "https://openweathermap.org/img/wn/${forecastWeather.weatherIcon}@${_iconSize}.png"))
-                    ),
-                  ),
-                  // Padding
-                  SizedBox(
-                    height: MediaQuery.sizeOf(context).height * 0.001,
-                  ),
-                  Text(
-                      "${forecastWeather.temperature!.fahrenheit!.toStringAsFixed(0)}° F"
-                  ),
-                ],
-              ),
-            ),
           );
-        },
+        }
       ),
     );
   }
