@@ -147,10 +147,6 @@ class _HomePageState extends State<HomePage>{
     });
   }
 
-  Future<void> _loadTimeZoneData(double lat, double lon) async{
-    _timeZoneData = await _timeZoneProvider.getTimeZoneData(lat, lon);
-  }
-
   // Returns currently selected location that weather data is being retrieved for
   Widget _displayLocation(){
     return Text(
@@ -322,10 +318,8 @@ class _HomePageState extends State<HomePage>{
 
     debugPrint(_forecast.toString(), wrapWidth: 1024);
 
-    final DateTime currentDateTime = _weather!.date!;
     // Forecast gives current info + next 5 days for 6 total cards
     final int length = 6;
-    final DateTime endDate = currentDateTime.add(Duration(days: length));
 
     return Expanded(
       child: LayoutBuilder(
@@ -344,11 +338,13 @@ class _HomePageState extends State<HomePage>{
             ),
             itemCount: length,
             itemBuilder: (context, index) {
-              DateTime date = currentDateTime.add(Duration(days: index));
               // For SOME REASON the provided 5 day forecast does not include the very last time
               // So we subtract the stupid bit from the index to not attempt access of element 40 (out of range)
               int stupidBit = index == 5 ? 1 : 0;
               Weather forecastWeather = _forecast!.elementAt(index * 8 - stupidBit);
+              final DateTime forecastDateTimeUtc = forecastWeather!.date!.toUtc();
+              final Duration? timeZoneOffset = _timeZoneData?.offset;
+              final DateTime? forecastDateTime = forecastDateTimeUtc.add(timeZoneOffset ?? Duration(seconds: 0));
 
               return GestureDetector(
                 onTap: () {
@@ -357,7 +353,7 @@ class _HomePageState extends State<HomePage>{
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            DetailedForecastView(weather: forecastWeather, forecast: _forecast!),
+                            DetailedForecastView(weather: forecastWeather, forecast: _forecast!, timeZoneData: _timeZoneData!,),
                     ),
                   );
                 },
@@ -368,7 +364,7 @@ class _HomePageState extends State<HomePage>{
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(DateFormat("E").format(forecastWeather.date!)),
+                      Text(DateFormat("E").format(forecastDateTime ?? forecastDateTimeUtc)),
                       // Padding
                       // SizedBox(
                       //   height: cardHeight * 0.08,

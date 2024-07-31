@@ -2,22 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/weather.dart';
 
+import 'package:wethr_app/timezones.dart';
+
+
 class DetailedForecastView extends StatelessWidget{
   final Weather _weather;
   final List<Weather> _forecast;
+  final TimeZoneData _timeZoneData;
 
   // TODO: Clean up
   DetailedForecastView({
     super.key,
     required Weather weather,
-    required List<Weather> forecast
+    required List<Weather> forecast,
+    required TimeZoneData timeZoneData
   }): _weather = weather,
-      _forecast = forecast;
+      _forecast = forecast,
+      _timeZoneData = timeZoneData;
 
   @override
   Widget build(BuildContext context){
-    final DateTime forecastDate = _weather.date!;
-    List<Weather> hourlyForecast = getHourlyForecast(forecastDate);
+    final DateTime forecastDateUtc = _weather.date!.toUtc();
+    final Duration timeZoneOffset = _timeZoneData.offset;
+    final DateTime forecastDate = forecastDateUtc.add(timeZoneOffset);
+    List<Weather> hourlyForecast = getHourlyForecast(forecastDateUtc);
 
     return Scaffold(
       appBar: AppBar(
@@ -72,33 +80,37 @@ class DetailedForecastView extends StatelessWidget{
                 ),
               ),
               Expanded(
-                child: ListView.builder(
-                  itemCount: hourlyForecast.length,
-                  itemBuilder: (context, index){
-                    Weather hourWeather = hourlyForecast.elementAt(index);
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          Text(
-                            "${DateFormat("h a").format(hourWeather.date!)}:",
-                          ),
-                          Image.network(
-                            "https://openweathermap.org/img/wn/${hourWeather.weatherIcon}@2x.png",
-                          ),
-                          Text(
-                            "${hourWeather.temperature!.fahrenheit!.toStringAsFixed(0)}° F",
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                child: _displayHourly(hourlyForecast)
               )
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _displayHourly(List<Weather> hourlyForecast){
+    return ListView.builder(
+      itemCount: hourlyForecast.length,
+      itemBuilder: (context, index){
+        Weather hourWeather = hourlyForecast.elementAt(index);
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            children: [
+              Text(
+                "${DateFormat("h a").format(hourWeather.date!)}:",
+              ),
+              Image.network(
+                "https://openweathermap.org/img/wn/${hourWeather.weatherIcon}@2x.png",
+              ),
+              Text(
+                "${hourWeather.temperature!.fahrenheit!.toStringAsFixed(0)}° F",
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
