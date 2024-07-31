@@ -89,6 +89,7 @@ class DetailedForecastView extends StatelessWidget{
     );
   }
 
+  // TODO: Localization here is hard. 8pm from tuesday can become 2am wednesday after localization
   Widget _displayHourly(List<Weather> hourlyForecast){
     return ListView.builder(
       itemCount: hourlyForecast.length,

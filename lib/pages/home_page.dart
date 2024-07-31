@@ -134,15 +134,12 @@ class _HomePageState extends State<HomePage>{
     );
   }
 
-  // TODO : Include state along with country code for duplicates
   // Populates dropdown_search with list of cities from OpenWeatherMap
   Future<void> _loadCities() async{
     await _cityProvider.loadCities();
-    // TODO: Do I need this call here if there is already one in updateWeather?
     setState(() {
       // Set a default city if none is selected yet
       _selectedCity = _cityProvider.getCities().elementAt(20000);
-      // TODO: Make sure this bang is kosher
       _updateWeather(_selectedCity);
     });
   }
@@ -216,12 +213,9 @@ class _HomePageState extends State<HomePage>{
     });
   }
 
-  // TODO: Need to update this information in real time
-  // TODO: Localize times to selected city
-  // TODO: Null safety here is a MESS, need to work some stuff out here
+  // TODO: Null safety here is gross, need to refactor
   // Returns current time, date, and day of the week
   Widget _displayDateTime(){
-    // TODO: Make this a _weather? call and add a null case for the datetime
     final DateTime weatherDateTimeUtc = _weather!.date!.toUtc();
     final Duration? timeZoneOffset = _timeZoneData?.offset;
     final DateTime? weatherDateTime = weatherDateTimeUtc.add(timeZoneOffset ?? Duration(seconds: 0));
@@ -348,7 +342,6 @@ class _HomePageState extends State<HomePage>{
 
               return GestureDetector(
                 onTap: () {
-                  // TODO: Implement detailed view
                   Navigator.push(
                     context,
                     MaterialPageRoute(
