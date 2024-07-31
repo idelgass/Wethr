@@ -139,7 +139,7 @@ class _HomePageState extends State<HomePage>{
     await _cityProvider.loadCities();
     setState(() {
       // Set a default city if none is selected yet
-      _selectedCity = _cityProvider.getCities().elementAt(20000);
+      _selectedCity = _cityProvider.getCities().firstWhere((city) => city.name == "New York City");
       _updateWeather(_selectedCity);
     });
   }
