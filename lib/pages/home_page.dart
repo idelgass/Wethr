@@ -9,6 +9,7 @@ import 'package:wethr_app/cities.dart';
 import 'dart:async';
 
 import 'package:wethr_app/pages/detailed_forecast.dart';
+import 'package:wethr_app/timezones.dart';
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -23,12 +24,15 @@ class _HomePageState extends State<HomePage>{
   // Access weather for a specific location from OpenWeatherMap
   final WeatherFactory _weatherFactory = WeatherFactory(OPEN_WEATHER_MAP_KEY);
   final CityProvider _cityProvider = CityProvider();
+  // TODO: Make timezonedb key an arg to match weather factory
+  final TimeZoneProvider _timeZoneProvider = TimeZoneProvider();
 
   // Stores weather-query response from OpenWeatherMap
   Weather? _weather;
   List<Weather>? _forecast;
   Timer? _updateTimer;
   City? _selectedCity;
+  TimeZoneData? _timeZoneData;
 
 
   @override
@@ -105,12 +109,12 @@ class _HomePageState extends State<HomePage>{
               ),
               // Padding
               SizedBox(
-                height: constraints.maxHeight * 0.12,
+                height: constraints.maxHeight * 0.05,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  "5-Day Forecast: ",
+                  "5-Day Forecast",
                 ),
               ),
               _displayForecast(),
@@ -141,6 +145,10 @@ class _HomePageState extends State<HomePage>{
       // TODO: Make sure this bang is kosher
       _updateWeather(_selectedCity);
     });
+  }
+
+  Future<void> _loadTimeZoneData(double lat, double lon) async{
+    _timeZoneData = await _timeZoneProvider.getTimeZoneData(lat, lon);
   }
 
   // Returns currently selected location that weather data is being retrieved for
@@ -202,21 +210,34 @@ class _HomePageState extends State<HomePage>{
     }).catchError((e){
       print("Error retrieving forecast data: $e");
     });
+
+    _timeZoneProvider.getTimeZoneData(city.lat, city.lon).then((fzoneData){
+      setState(() {
+        _timeZoneData = fzoneData;
+      });
+    }).catchError((e){
+      print("Error retrieving timezone data: $e");
+    });
   }
 
   // TODO: Need to update this information in real time
   // TODO: Localize times to selected city
+  // TODO: Null safety here is a MESS, need to work some stuff out here
   // Returns current time, date, and day of the week
   Widget _displayDateTime(){
     // TODO: Make this a _weather? call and add a null case for the datetime
-    final DateTime weatherDateTime = _weather!.date!;
+    final DateTime weatherDateTimeUtc = _weather!.date!.toUtc();
+    final Duration? timeZoneOffset = _timeZoneData?.offset;
+    final DateTime? weatherDateTime = weatherDateTimeUtc.add(timeZoneOffset ?? Duration(seconds: 0));
+
     return Column(
       children: [
         // Display time as Hour:minutes am/pm
         Text(
-            "Retrieved: ${DateFormat("EEEE").format(weatherDateTime)}, "
-                "${DateFormat("d.M.y").format(weatherDateTime)} "
-                "at ${DateFormat("h:mm a").format(weatherDateTime)}",
+            "Retrieved: ${DateFormat("EEEE").format(weatherDateTime ?? weatherDateTimeUtc)}, "
+                "${DateFormat("d.M.y").format(weatherDateTime ?? weatherDateTimeUtc)} "
+                "at ${DateFormat("h:mm a").format(weatherDateTime ?? weatherDateTimeUtc)}",
+                // " ${timeZoneOffset ?? "UTC"}",
             style: const TextStyle(
               //TODO: Set text style later
             )
